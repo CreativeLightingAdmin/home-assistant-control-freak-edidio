@@ -1,0 +1,45 @@
+"""Constants for the Control Freak integration."""
+
+DOMAIN = "control_freak_edidio"
+# Default values
+DEFAULT_PORT = 23
+DEFAULT_NUM_LIGHTS = 0
+
+# Protocols
+PROTOCOL_DALI_WHITE = "DALI White"
+PROTOCOL_DALI_RGB = "DALI RGB"
+PROTOCOL_DALI_RGBW = "DALI RGBW"
+PROTOCOL_DALI_DT8_XY = "DALI DT8 XY"
+PROTOCOL_DALI_DT8_CCT = "DALI DT8 CCT"
+PROTOCOL_DMX_WHITE = "DMX White"
+PROTOCOL_DMX_RGB = "DMX RGB"
+PROTOCOL_DMX_RGBW = "DMX RGBW"
+
+PROTOCOLS = [
+    PROTOCOL_DALI_WHITE,
+    PROTOCOL_DALI_RGB,
+    PROTOCOL_DALI_RGBW,
+    PROTOCOL_DALI_DT8_XY,
+    PROTOCOL_DALI_DT8_CCT,
+    PROTOCOL_DMX_WHITE,
+    PROTOCOL_DMX_RGB,
+    PROTOCOL_DMX_RGBW,
+]
+
+# ConfigFlow data keys
+CONF_HOST = "host"
+CONF_PORT = "port"
+CONF_NUM_LIGHTS = "num_lights"
+CONF_LIGHTS = "lights"
+CONF_LIGHT_NAME = "name"
+CONF_LIGHT_ADDRESS = "address"
+CONF_LIGHT_PROTOCOL = "protocol"
+CONF_LIGHT_LINE = "line"
+
+CONF_LIGHT_ID = "light_id"
+
+# Error keys for config flow
+ERROR_CANNOT_CONNECT = "cannot_connect"
+ERROR_UNKNOWN = "unknown"
+ERROR_INVALID_ADDRESS_FORMAT = "invalid_address_format"
+ERROR_UNKNOWN_ADDRESS_ERROR = "unknown_address_error"

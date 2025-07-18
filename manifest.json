@@ -1,0 +1,18 @@
+{
+  "domain": "control_freak_edidio",
+  "name": "Control Freak",
+  "version": "0.0.1",
+  "codeowners": [
+    "@MikeCreative"
+  ],
+  "requirements": [
+    "edidio_control_py==0.1.1"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/CreativeLightingAdmin/home-assistant-control-freak-edidio#readme",
+  "homekit": {},
+  "iot_class": "local_push",
+  "quality_scale": "bronze",
+  "ssdp": [],
+  "zeroconf": []
+}

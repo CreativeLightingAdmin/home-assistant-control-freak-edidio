@@ -1,0 +1,69 @@
+{
+  "options": {
+    "step": {
+      "init": {
+        "title": "Control Freak eDIDIO Lights",
+        "description": "Please select an option to manage your lights.",
+        "data": {
+          "action": "Action",
+          "light_index": "Select Light"
+        }
+      },
+      "edit_light": {
+        "title": "Edit {light_name}",
+        "data": {
+          "name": "Name",
+          "address": "Address",
+          "protocol": "Protocol",
+          "line": "Line"
+        },
+        "description": "Adjust the settings for {light_name}."
+      },
+      "add_light": {
+        "title": "Add a New Light",
+        "data": {
+          "name": "Name",
+          "address": "Address",
+          "protocol": "Protocol",
+          "line": "Line"
+        },
+        "description": "Enter details for the new light."
+      },
+      "remove_light": {
+        "title": "Confirm Removal of {light_name}",
+        "description": "Are you sure you want to remove this Light? This action cannot be undone.",
+        "data": {
+          "confirm_remove": "Yes, remove this light"
+        }
+      },
+      "manage_lights": {
+        "title": "Manage Lights",
+        "description": "Select an action to manage your lights."
+      },
+      "reconfigure_connection": {
+        "title": "Reconfigure Control Freak Connection",
+        "description": "Update the IP address and port for your Control Freak device.",
+        "data": {
+          "host": "Host",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "duplicate_light_name": "A light with this name already exists.",
+      "no_light_selected": "Please select a light to edit or remove.",
+      "invalid_selection": "Invalid selection. Please choose a valid option.",
+      "invalid_light_selection_for_removal": "Invalid light selected for removal. Please try again."
+    },
+    "abort": {
+      "invalid_selection": "Invalid selection."
+    },
+    "selector": {
+      "action": {
+        "edit": "Edit a Light",
+        "add": "Add a Light",
+        "remove": "Remove a Light"
+      }
+    }
+  }
+}
