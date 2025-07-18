@@ -45,7 +45,7 @@ HACS (Home Assistant Community Store) simplifies the installation and updates of
     * In Home Assistant, navigate to **HACS** (if you don't have HACS, follow [these instructions](https://hacs.xyz/docs/setup/download)).
     * Go to **Integrations**.
     * Click the three dots in the top right corner and select **Custom repositories**.
-    * In the "Repository" field, paste your GitHub repository URL: `YOUR_GITHUB_USERNAME/YOUR_REPO_NAME` (e.g., `myusername/control_freak_edidio`).
+    * In the "Repository" field, paste the GitHub repository URL: `https://github.com/CreativeLightingAdmin/home-assistant-control-freak-edidio`.
     * Select "Integration" as the "Category".
     * Click **Add**.
 2.  **Install the Integration:**
