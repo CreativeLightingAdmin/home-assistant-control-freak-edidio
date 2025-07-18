@@ -57,7 +57,7 @@ HACS (Home Assistant Community Store) simplifies the installation and updates of
 ### B. Manual Installation (Advanced)
 
 1.  **Download the Integration:**
-    * Go to the [latest release](YOUR_GITHUB_REPO_URL/releases/latest) of this repository.
+    * Go to the `https://github.com/CreativeLightingAdmin/home-assistant-control-freak-edidio` of this repository.
     * Download the source code archive (e.g., `Source code (zip)`).
     * Extract the contents.
     * Locate the `custom_components/control_freak_edidio` folder.
@@ -78,7 +78,7 @@ The Control Freak Edidio integration is configured via the Home Assistant UI.
 2.  **Enter Controller Details:**
     * You will be prompted to enter the **IP Address** and **Port** of your Control Freak Edidio Gateway.
     * **IP Address:** `[e.g., 192.168.1.10]`
-    * **Port:** `[e.g., 5000]` (default is often 5000)
+    * **Port:** `[e.g., 23]` (default is 23)
     * Click **Submit**.
 3.  **Define Your Lights:**
     * Next, you will define each light entity. Click **+ ADD LIGHT** for each light you want to add.
@@ -110,7 +110,7 @@ Your lights should now appear in Home Assistant under **Settings** > **Devices &
 # Do NOT place this directly in configuration.yaml unless instructed by advanced documentation
 control_freak_edidio:
   - host: 192.168.1.10
-    port: 5000
+    port: 23
     lights:
       - id: living_room_main
         name: Living Room Main Light
