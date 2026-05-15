@@ -1,6 +1,7 @@
 """Control Freak eDIDIO Home Assistant integration."""
 
 import logging
+import ssl
 
 from edidio_control_py import EdidioClient
 from edidio_control_py.exceptions import EDIDIOConnectionError, EDIDIOTimeoutError
@@ -8,63 +9,43 @@ from edidio_control_py.exceptions import EDIDIOConnectionError, EDIDIOTimeoutErr
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import CONF_HOST, CONF_PORT, DOMAIN
+from .const import CONF_HOST, CONF_PORT, CONF_TLS, DOMAIN
 
-PLATFORMS: list[Platform] = [Platform.LIGHT]  # Define platforms
+PLATFORMS: list[Platform] = [Platform.LIGHT]
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
-    """Handle options update."""
-    _LOGGER.info("Control Freak options updated, reloading integration")
-    # This will call async_unload_entry and then async_setup_entry again
-    await hass.config_entries.async_reload(config_entry.entry_id)
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Control Freak from a config entry."""
-    host = entry.data.get(CONF_HOST)
-    port = entry.data.get(CONF_PORT)
+    host = entry.data[CONF_HOST]
+    port = entry.data[CONF_PORT]
+    use_tls = entry.data.get(CONF_TLS, False)
 
-    if not host or not port:
-        _LOGGER.error(
-            "Host or port not found in configuration data. This should not happen with proper config flow validation"
-        )
-        return False
+    ssl_context = None
+    if use_tls:
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
 
-    # Instantiate EdidioClient
-    client = EdidioClient(host, port)
+    client = EdidioClient(host, port, use_tls=use_tls, ssl_context=ssl_context)
 
-    # Attempt to connect to the device.
     try:
         await client.connect()
         _LOGGER.info("Successfully connected to eDIDIO device at %s:%s", host, port)
     except (EDIDIOConnectionError, EDIDIOTimeoutError) as e:
-        _LOGGER.warning(
-            "Initial connection to Control Freak device failed (%s:%s): %s. "
-            "The integration will attempt to reconnect when needed",
-            host,
-            port,
-            e,
-        )
+        raise ConfigEntryNotReady(
+            f"Cannot connect to Control Freak device at {host}:{port}: {e}"
+        ) from e
 
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {
-        "client": client,
-        "config_entry": entry,
-    }
-    _LOGGER.debug(
-        "Control Freak integration data stored for %s: %s",
-        entry.entry_id,
-        hass.data[DOMAIN][entry.entry_id],
-    )
+    entry.runtime_data = client
 
-    # Register the options update listener
-    entry.async_on_unload(entry.add_update_listener(options_update_listener))
+    async def _async_reload(hass: HomeAssistant, entry: ConfigEntry) -> None:
+        await hass.config_entries.async_reload(entry.entry_id)
 
-    # Forward the setup to platforms (e.g., "light")
+    entry.async_on_unload(entry.add_update_listener(_async_reload))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
@@ -72,25 +53,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.debug(
-        "Unloading Control Freak integration for entry_id: %s", entry.entry_id
-    )
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        domain_data = hass.data[DOMAIN].pop(entry.entry_id, None)
-        if domain_data and (client := domain_data.get("client")):
+        client: EdidioClient = entry.runtime_data
+        try:
             await client.disconnect()
-            _LOGGER.info(
-                "Control Freak client disconnected and data removed for %s",
-                entry.entry_id,
-            )
+        except Exception:
+            pass
+        _LOGGER.info("Control Freak client disconnected for %s", entry.entry_id)
 
     return unload_ok
-
-
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload a config entry."""
-    _LOGGER.debug("Reloading Control Freak config entry: %s", entry.entry_id)
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)

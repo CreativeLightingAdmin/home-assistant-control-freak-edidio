@@ -18,6 +18,8 @@ from edidio_control_py.exceptions import (
 from homeassistant.components.light import ColorMode, LightEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.color import (
     color_temperature_kelvin_to_mired,
@@ -25,12 +27,14 @@ from homeassistant.util.color import (
 )
 
 from .const import (
+    CONF_HOST,
     CONF_LIGHT_ADDRESS,
     CONF_LIGHT_ID,
     CONF_LIGHT_LINE,
     CONF_LIGHT_NAME,
     CONF_LIGHT_PROTOCOL,
     CONF_LIGHTS,
+    CONF_PORT,
     DOMAIN,
     PROTOCOL_DALI_DT8_CCT,
     PROTOCOL_DALI_DT8_XY,
@@ -64,19 +68,36 @@ def get_message_id_generator():
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,  # This 'entry' is already the config_entry object passed by HA
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Control Freak lights from config entry."""
-    client_data = hass.data[DOMAIN][entry.entry_id]
-    client: EdidioClient = client_data["client"]  # Type hint for clarity
+    client: EdidioClient = entry.runtime_data
 
     get_next_message_id = get_message_id_generator()
 
-    # Get the lights configuration directly from the entry.options
     lights_config = entry.options.get(CONF_LIGHTS, [])
     _LOGGER.debug(
         "Light platform async_setup_entry: retrieved lights_config: %s", lights_config
+    )
+
+    configured_unique_ids = {
+        f"{DOMAIN}_{light_data[CONF_LIGHT_ID]}"
+        for light_data in lights_config
+        if CONF_LIGHT_ID in light_data
+    }
+    registry = er.async_get(hass)
+    for registry_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if registry_entry.unique_id not in configured_unique_ids:
+            registry.async_remove(registry_entry.entity_id)
+
+    host = entry.data.get(CONF_HOST, "")
+    port = entry.data.get(CONF_PORT, "")
+    device_info = DeviceInfo(
+        identifiers={(DOMAIN, entry.entry_id)},
+        name=f"Control Freak eDIDIO ({host}:{port})",
+        manufacturer="Control Freak",
+        model="eDIDIO S10",
     )
 
     entities_to_add = []
@@ -117,8 +138,9 @@ async def async_setup_entry(
                 light_data[CONF_LIGHT_NAME],
                 light_data[CONF_LIGHT_PROTOCOL],
                 get_next_message_id,
-                line=light_data.get(CONF_LIGHT_LINE, 1),  # Default to 1 if not present
-                stable_id=light_data.get(CONF_LIGHT_ID),  # Pass the stable ID
+                line=light_data.get(CONF_LIGHT_LINE, 1),
+                stable_id=light_data.get(CONF_LIGHT_ID),
+                device_info=device_info,
             )
         )
 
@@ -141,6 +163,7 @@ class ControlFreakLight(LightEntity):
         get_message_id_func,
         line: int = 1,
         stable_id: str | None = None,
+        device_info: DeviceInfo | None = None,
     ) -> None:
         """Initialize the light."""
         self._client = client
@@ -150,23 +173,20 @@ class ControlFreakLight(LightEntity):
         self._line = line
         self._get_message_id = get_message_id_func
 
-        # Store and use the stable ID for unique_id
         if stable_id:
             self._attr_unique_id = f"{DOMAIN}_{stable_id}"
-            self._stable_id_value = stable_id
-            _LOGGER.debug(
-                "Light '%s' initialized with stable ID: %s", name, self._attr_unique_id
-            )
         else:
             new_uuid = str(uuid.uuid4())
             self._attr_unique_id = f"{DOMAIN}_{new_uuid}"
-            self._stable_id_value = new_uuid
             _LOGGER.warning(
                 "Light '%s' initialized without a stable ID. Generating a new one: %s "
                 "Please update configuration via options flow to persist this ID to avoid entity re-creation on restart",
                 name,
                 self._attr_unique_id,
             )
+
+        if device_info is not None:
+            self._attr_device_info = device_info
 
         # Initial state
         self._is_on = False
@@ -185,11 +205,6 @@ class ControlFreakLight(LightEntity):
 
         # Default availability until update confirms connection
         self._attr_available = True
-
-    @property
-    def unique_id(self):
-        """Return the unique ID for this light."""
-        return self._attr_unique_id
 
     @property
     def supported_color_modes(self) -> set[ColorMode]:
@@ -257,23 +272,6 @@ class ControlFreakLight(LightEntity):
         """Return the color temperature of the light in Kelvin."""
         if self._protocol == PROTOCOL_DALI_DT8_CCT and self._color_temp is not None:
             return color_temperature_mired_to_kelvin(self._color_temp)
-        return None
-
-    @property
-    def min_mireds(self):
-        """Return the minimum color temperature that this light supports."""
-        if self._protocol == PROTOCOL_DALI_DT8_CCT:
-            # These values should match _attr_min/max_color_temp_kelvin conversion
-            # 6500K -> approx 153 mireds
-            # 2000K -> approx 500 mireds
-            return color_temperature_kelvin_to_mired(self._attr_max_color_temp_kelvin)
-        return None
-
-    @property
-    def max_mireds(self):
-        """Return the maximum color temperature that this light supports."""
-        if self._protocol == PROTOCOL_DALI_DT8_CCT:
-            return color_temperature_kelvin_to_mired(self._attr_min_color_temp_kelvin)
         return None
 
     @property
@@ -845,35 +843,14 @@ class ControlFreakLight(LightEntity):
 
     async def async_update(self):
         """Fetch new state data for the light."""
-        try:
-            self._attr_available = self._client.connected
-
-            if self._attr_available:
-                pass
-
-        except (
-            EDIDIOConnectionError,
-            EDIDIOCommunicationError,
-            EDIDIOTimeoutError,
-        ) as e:
-            _LOGGER.debug(
-                "Client connection error during update for %s: %s", self._name, e
-            )
-            self._attr_available = False
-        except Exception:
-            _LOGGER.exception(
-                "An unexpected error occurred during update for %s", self._name
-            )
-            self._attr_available = False
-
-    def set_protocol(self, protocol):
-        """Dynamically set the protocol (DALI/DMX)."""
-        self._protocol = protocol
-
-    def set_address(self, address):
-        """Dynamically set the address."""
-        self._address = address
-
+        if not self._client.connected:
+            try:
+                await self._client.connect()
+                self._attr_available = True
+            except (EDIDIOConnectionError, EDIDIOTimeoutError):
+                self._attr_available = False
+        else:
+            self._attr_available = True
 
 def rgb_to_xy_16bit(r, g, b):
     """Convert RGB to 16-bit XY using Wide RGB D65 (Philips Hue style)."""

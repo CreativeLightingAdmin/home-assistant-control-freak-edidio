@@ -3,6 +3,7 @@
 DOMAIN = "control_freak_edidio"
 # Default values
 DEFAULT_PORT = 23
+DEFAULT_TLS_PORT = 443
 DEFAULT_NUM_LIGHTS = 0
 
 # Protocols
@@ -29,6 +30,7 @@ PROTOCOLS = [
 # ConfigFlow data keys
 CONF_HOST = "host"
 CONF_PORT = "port"
+CONF_TLS = "tls"
 CONF_NUM_LIGHTS = "num_lights"
 CONF_LIGHTS = "lights"
 CONF_LIGHT_NAME = "name"

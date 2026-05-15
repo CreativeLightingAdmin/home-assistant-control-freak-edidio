@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Control Freak eDIDIO",
+        "data": {
+          "host": "Host",
+          "tls": "Use TLS",
+          "port": "Port"
+        },
+        "description": "Enter the connection details for your Control Freak eDIDIO device. Default port is {plain_port} (plain) or {tls_port} (TLS)."
+      },
+      "add_another": {
+        "title": "Lights",
+        "menu_options": {
+          "configure_light": "Add a light",
+          "finish_setup": "Finish setup"
+        }
+      },
+      "configure_light": {
+        "title": "Add a Light",
+        "data": {
+          "name": "Name",
+          "address": "DALI/DMX Address",
+          "protocol": "Protocol",
+          "line": "Line"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Control Freak Options",
+        "menu_options": {
+          "reconfigure_connection": "Reconfigure connection (IP / Port / TLS)",
+          "manage_lights": "Manage lights"
+        }
+      },
+      "reconfigure_connection": {
+        "title": "Reconfigure Connection",
+        "data": {
+          "host": "Host",
+          "tls": "Use TLS",
+          "port": "Port"
+        },
+        "description": "Default port is {plain_port} (plain) or {tls_port} (TLS)."
+      },
+      "manage_lights": {
+        "title": "Manage Lights",
+        "menu_options": {
+          "add_light": "Add a light",
+          "edit_light": "Edit a light",
+          "remove_light": "Remove a light",
+          "finish": "Save & close"
+        }
+      },
+      "add_light": {
+        "title": "Add a Light",
+        "data": {
+          "name": "Name",
+          "address": "DALI/DMX Address",
+          "protocol": "Protocol",
+          "line": "Line"
+        }
+      },
+      "edit_light": {
+        "title": "Select Light to Edit",
+        "data": {
+          "light_index": "Light"
+        }
+      },
+      "edit_light_details": {
+        "title": "Edit Light",
+        "data": {
+          "name": "Name",
+          "address": "DALI/DMX Address",
+          "protocol": "Protocol",
+          "line": "Line"
+        }
+      },
+      "remove_light": {
+        "title": "Remove a Light",
+        "data": {
+          "light_index": "Light",
+          "confirm_remove": "Confirm removal"
+        }
+      }
+    },
+    "error": {
+      "duplicate_light_name": "A light with this name already exists."
+    },
+    "abort": {
+      "invalid_selection": "Invalid light selection."
+    }
+  }
+}

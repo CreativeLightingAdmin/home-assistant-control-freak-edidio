@@ -1,12 +1,12 @@
 {
   "domain": "control_freak_edidio",
   "name": "Control Freak",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "codeowners": [
     "@MikeCreative"
   ],
   "requirements": [
-    "edidio_control_py==0.1.1"],
+    "edidio_control_py==0.2.0"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/CreativeLightingAdmin/home-assistant-control-freak-edidio#readme",
