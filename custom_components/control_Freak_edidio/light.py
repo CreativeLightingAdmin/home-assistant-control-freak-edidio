@@ -313,7 +313,7 @@ class ControlFreakLight(LightEntity):
                     self._client.create_dmx_message(
                         message_id=self._get_message_id(),
                         zone=0,
-                        universe_mask=0b0010,
+                        universe_mask=1 << (self._line - 1),
                         channel=self._address,
                         repeat=1,
                         level=[scaled_r, scaled_g, scaled_b],
@@ -340,7 +340,7 @@ class ControlFreakLight(LightEntity):
                     self._client.create_dmx_message(
                         message_id=self._get_message_id(),
                         zone=0,
-                        universe_mask=0b0010,
+                        universe_mask=1 << (self._line - 1),
                         channel=self._address,
                         repeat=1,
                         level=[scaled_r, scaled_g, scaled_b, scaled_w],
@@ -630,11 +630,11 @@ class ControlFreakLight(LightEntity):
                     self._client.create_dmx_message(
                         message_id=self._get_message_id(),
                         zone=0,
-                        universe_mask=0b0010,
+                        universe_mask=1 << (self._line - 1),
                         channel=self._address,
                         repeat=1,
                         level=[self._brightness],
-                        fade_time_by_10ms=25,  # Set Nice Fade Time
+                        fade_time_by_10ms=25,
                     )
                 )
                 _LOGGER.debug(
@@ -673,6 +673,9 @@ class ControlFreakLight(LightEntity):
                 return
 
             await self._client.send_dali_commands_sequence(commands_to_send)
+            _LOGGER.debug(
+                "Sent %d command(s) for light %s", len(commands_to_send), self._name
+            )
 
         except (
             EDIDIOConnectionError,
@@ -710,7 +713,7 @@ class ControlFreakLight(LightEntity):
                         self._client.create_dmx_message(
                             message_id=self._get_message_id(),
                             zone=0,
-                            universe_mask=0b0010,
+                            universe_mask=1 << (self._line - 1),
                             channel=self._address,
                             repeat=1,
                             level=[0, 0, 0],
@@ -722,7 +725,7 @@ class ControlFreakLight(LightEntity):
                         self._client.create_dmx_message(
                             message_id=self._get_message_id(),
                             zone=0,
-                            universe_mask=0b0010,
+                            universe_mask=1 << (self._line - 1),
                             channel=self._address,
                             repeat=1,
                             level=[0, 0, 0, 0],
@@ -734,7 +737,7 @@ class ControlFreakLight(LightEntity):
                         self._client.create_dmx_message(
                             message_id=self._get_message_id(),
                             zone=0,
-                            universe_mask=0b0010,
+                            universe_mask=1 << (self._line - 1),
                             channel=self._address,
                             repeat=1,
                             level=[0],
@@ -821,6 +824,9 @@ class ControlFreakLight(LightEntity):
                 return
 
             await self._client.send_dali_commands_sequence(commands_to_send)
+            _LOGGER.debug(
+                "Sent %d command(s) for light %s (turn off)", len(commands_to_send), self._name
+            )
 
         except (
             EDIDIOConnectionError,

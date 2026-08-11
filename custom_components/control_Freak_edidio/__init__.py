@@ -34,7 +34,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         await client.connect()
-        _LOGGER.info("Successfully connected to eDIDIO device at %s:%s", host, port)
+        _LOGGER.info(
+            "Successfully connected to eDIDIO device at %s:%s (TLS: %s)",
+            host,
+            port,
+            use_tls,
+        )
     except (EDIDIOConnectionError, EDIDIOTimeoutError) as e:
         raise ConfigEntryNotReady(
             f"Cannot connect to Control Freak device at {host}:{port}: {e}"
